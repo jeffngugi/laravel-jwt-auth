@@ -30,10 +30,19 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        $email =  $request->email;
+        $user = User::where('email', $email)->first();
+       if(!$user){
+           return response()->json(['message'=>'User does not exist'], 404);
+       }
+      
         //see if the user email is verified
         $credentials = $request->only('email', 'password');
 
         if ($token = $this->guard()->attempt($credentials)) {
+            if(!$user->email_verified_at){
+                return response()->json(['status'=>'error', 'message'=>'Verifiy your account first'], 403);
+            }
             return $this->respondWithToken($token);
         }
 
@@ -78,11 +87,11 @@ class AuthController extends Controller
     		
 
     		});
-            return response()->json(['status', 'User created successfully'], 201);
+            return response()->json(['status' => 'User created successfully'], 201);
            
         }else{
             //ask users to retry
-            return response()->json(['status', 'User could not be created'], 401);
+            return response()->json(['status' => 'User could not be created'], 401);
         }
 
 
