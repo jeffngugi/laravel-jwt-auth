@@ -14,3 +14,10 @@ Route::group([
     Route::post('me', 'AuthController@me');
     Route::get('verify', 'AuthController@emailVerify');
 });
+
+/**
+ * Add the urls that you want to be guarded by jwt middleware
+ */
+Route::group(['middleware' => ['jwt.verify']], function() {
+    // Route::get('getText', 'AuthController@getText');
+});
