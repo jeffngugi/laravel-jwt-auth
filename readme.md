@@ -5,22 +5,46 @@
     <tr>
         <td>Method</td>
         <td>URI </td>
-        <td> Name</td>
         <td>Action </td>
         <td> Middleware</td>
     </tr>
+    <tr>
+        <td>GET|HEAD</td>
+        <td>/ </td>
+        <td>Closure </td>
+        <td> web</td>
+    </tr>
+     <tr>
+        <td>POST</td>
+        <td>api/auth/login </td>
+        <td>App\Http\Controllers\AuthController@login </td>
+        <td> api</td>
+    </tr>
+    <tr>
+        <td>POST</td>
+        <td>api/auth/logout </td>
+        <td>App\Http\Controllers\AuthController@logout </td>
+        <td> jwt.verify</td>
+    </tr>
+    <tr>
+        <td>POST</td>
+        <td>api/auth/me </td>
+        <td>App\Http\Controllers\AuthController@me </td>
+        <td> jwt.verify</td>
+    </tr>
+    <tr>
+        <td>POST</td>
+        <td>api/auth/refresh </td>
+        <td>App\Http\Controllers\AuthController@refresh </td>
+        <td> jwt.verify</td>
+    </tr>
+     <tr>
+        <td>POST</td>
+        <td>api/auth/register </td>
+        <td>App\Http\Controllers\AuthController@register </td>
+        <td> jwt.verify</td>
+    </tr>
     </table>
            
-<p>+--------+----------+-------------------+------+-------------------------------------------------+----------------+</p>
-<p>| Domain | Method   | URI               | Name | Action                                          | Middleware     |</p>
-<p>+--------+----------+-------------------+------+-------------------------------------------------+----------------+</p>
-<p>|        | GET|HEAD | /                 |      | Closure                                         | web            |</p>
-<p>|        | POST     | api/auth/login    |      | App\Http\Controllers\AuthController@login       | api            |</p>
-<p>|        | POST     | api/auth/logout   |      | App\Http\Controllers\AuthController@logout      | api,jwt.verify |</p>
-<p>|        | POST     | api/auth/me       |      | App\Http\Controllers\AuthController@me          | api,jwt.verify |</p>
-<p>|        | POST     | api/auth/refresh  |      | App\Http\Controllers\AuthController@refresh     | api,jwt.verify |</p>
-<p>|        | POST     | api/auth/register |      | App\Http\Controllers\AuthController@register    | api            |</p>
-<p>|        | GET|HEAD | api/auth/verify   |      | App\Http\Controllers\AuthController@emailVerify | api,jwt.verify |</p>
-<p>+--------+----------+-------------------+------+-------------------------------------------------+----------------+</p>
 
 <p>To protect a route, Use jwt.verify middleware</p>
