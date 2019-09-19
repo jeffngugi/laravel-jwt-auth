@@ -7,9 +7,9 @@ use Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\APIController;
 
-class AuthController extends Controller
+class AuthController extends APIController
 {
     /**
      * Create a new AuthController instance.
@@ -18,7 +18,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        //Add methods that you would like to be protected by the jwt verify middleware
+        $this->middleware('jwt.verify', ['except' => ['login', 'register']]);
     }
 
     /**
@@ -33,27 +34,23 @@ class AuthController extends Controller
         $email =  $request->email;
         $user = User::where('email', $email)->first();
        if(!$user){
-           return response()->json(['message'=>'User does not exist'], 404);
+           return $this->responseNotFound('User does not exist');
        }
-      
-        //see if the user email is verified
         $credentials = $request->only('email', 'password');
-
         if ($token = $this->guard()->attempt($credentials)) {
-            if(!$user->email_verified_at){
-                return response()->json(['status'=>'error', 'message'=>'Verifiy your account first'], 403);
-            }
+            //Uncomment below to ensure user is verified before login
+            // if(!$user->email_verified_at){
+            //     return $this->responseUnprocessable('Verifiy your account first');
+            // }
             return $this->respondWithToken($token);
         }
 
-        return response()->json(['error' => 'Unauthorized'], 401);
+        return $this->responseUnauthorized();
     }
 
 
 
     public function register(Request $request){
-       
-        //validate request
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
@@ -61,7 +58,7 @@ class AuthController extends Controller
         ]);
             //check if validator passess
         if($validator->fails()){
-            return response()->json($validator->errors(), 400);
+            return $this->responseUnprocessable($validator->errors());
         }
 
         //append verification code to cod
@@ -76,28 +73,24 @@ class AuthController extends Controller
         if($user){
             $email= $request->email;
             $name=$request->name;
-
-            //Make mail function for the code below
-            $subject = 'Please verify your email address';
-    	    Mail::send('email.verify', ['name'=>$name,'verification_code'=>$verification_code],
-    		function($mail) use ($email,$name,$subject){
-    			$mail->from('sutralian@gmail.com','test verify');
-    			$mail->to($email,$name);
-    			$mail->subject($subject);
-    		
-
-    		});
-            return response()->json(['status' => 'User created successfully'], 201);
-           
+            //Make mail function for the code below: UNcomment below to send email
+            // $subject = 'Please verify your email address';
+    	    // Mail::send('email.verify', ['name'=>$name,'verification_code'=>$verification_code],
+    		// function($mail) use ($email,$name,$subject){
+    		// 	$mail->from('sutralian@gmail.com','test verify');
+    		// 	$mail->to($email,$name);
+    		// 	$mail->subject($subject)
+    		// });
+            return $this->responseResourceCreated('User created successfully');
         }else{
             //ask users to retry
-            return response()->json(['status' => 'User could not be created'], 401);
+            return $this->responseUnauthorized('User could not be created');
         }
 
 
         if(!$token = auth()->attempt($request->only(['email', 'password'])))
         {
-            return abort(401);
+            return $this->responseUnauthorized();
         }
 
         return $token;
@@ -113,7 +106,7 @@ class AuthController extends Controller
      */
     public function me()
     {
-        return response()->json($this->guard()->user());
+        return response()->json($this->guard()->user()->only(['id','name','email']));
     }
 
     /**
@@ -125,7 +118,7 @@ class AuthController extends Controller
     {
         $this->guard()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return $this->responseResourceUpdated('Successfully logged out');
     }
 
     /**
@@ -148,10 +141,14 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         return response()->json([
-            'access_token' => $token,
+            'access_token' => 'Bearer '.$token,
             'token_type' => 'bearer',
             'expires_in' => $this->guard()->factory()->getTTL() * 60
         ]);
+    }
+
+    public function getText(){
+        return 'This is jeff';
     }
 
     /**
